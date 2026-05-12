@@ -14,7 +14,7 @@ void JointManager::handle_set_joints(const std::vector<JointCommandTarget> & tar
   }
 
   std::lock_guard<std::mutex> lock(mutex);
-  if (command_running) {
+  if (command_running || should_publish_set_torque) {
     return;
   }
 
@@ -38,8 +38,30 @@ void JointManager::handle_set_joints(const std::vector<JointCommandTarget> & tar
   command_running = true;
 }
 
+void JointManager::handle_set_torques(const std::vector<b1::JointIndex> & joints, bool torque_enable)
+{
+  booster_interface::msg::LowState low_state;
+  if (joints.empty() || !get_low_state(low_state)) {
+    return;
+  }
+
+  std::lock_guard<std::mutex> lock(mutex);
+  if (command_running || should_publish_set_torque) {
+    return;
+  }
+
+  target_cmd = construct_set_torque_command(low_state, joints, torque_enable);
+  should_publish_set_torque = true; 
+}
+
 bool JointManager::tick_command(booster_interface::msg::LowCmd & cmd)
 {
+  if (should_publish_set_torque) {
+    should_publish_set_torque = false;
+    cmd = target_cmd;
+    return true;
+  }
+
   std::lock_guard<std::mutex> lock(mutex);
   if (!command_running) {
     return false;
@@ -68,7 +90,7 @@ bool JointManager::tick_command(booster_interface::msg::LowCmd & cmd)
     active_cmd.motor_cmd[index].weight = current_weight + weight_step;
 
     if (std::abs(delta_q) > max_joint_delta || std::abs(target_weight - current_weight) > kWeightMargin) {
-          command_reached = false;
+      command_reached = false;
     }
   }
 

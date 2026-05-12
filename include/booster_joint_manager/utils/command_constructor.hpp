@@ -24,12 +24,13 @@ inline constexpr float kInactiveJointWeight = 0.0F;
 inline constexpr float kActiveJointWeight = 0.5F;
 inline constexpr float kControlDt = 0.02F;
 inline constexpr float kJointWeightRate = 0.2F;
-inline constexpr float kMaxJointVelocity = 0.5F;
+inline constexpr float kBaseJointVelocity = 0.1F;
+inline constexpr float kMaxJointVelocity = 1.0F;
 inline constexpr float kWeightMargin = kJointWeightRate * kControlDt;
-inline constexpr float kMaxJointDelta = kMaxJointVelocity * kControlDt;
-inline constexpr float kBaseJointStep = kMaxJointDelta;
+inline constexpr float kBaseJointStep = kBaseJointVelocity * kControlDt;
 inline constexpr float kBaseJointStepPerTick = kBaseJointStep;
-inline constexpr float kMaxJointStep = kMaxJointDelta;
+inline constexpr float kMaxJointStep = kMaxJointVelocity * kControlDt;
+inline constexpr float kMaxJointDelta = kMaxJointStep;
 inline constexpr int kCommandTickMs = static_cast<int>(kControlDt / 0.001F);
 
 booster_interface::msg::LowCmd construct_joint_command(

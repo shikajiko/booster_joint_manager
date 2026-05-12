@@ -9,6 +9,7 @@
 #include "booster_joint_manager/utils/joint_maps.hpp"
 #include "booster_joint_manager/utils/command_constructor.hpp"
 #include "booster_joint_interface/msg/set_joints.hpp"
+#include "booster_joint_interface/msg/set_torques.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace booster_joint_manager
@@ -33,10 +34,12 @@ private:
   rclcpp::Publisher<booster_interface::msg::LowState>::SharedPtr joint_state_publisher;
   rclcpp::Subscription<booster_interface::msg::LowState>::SharedPtr joint_state_subscriber;
   rclcpp::Subscription<booster_joint_interface::msg::SetJoints>::SharedPtr set_cmd_subscriber;
+  rclcpp::Subscription<booster_joint_interface::msg::SetTorques>::SharedPtr set_torques_subscriber;
   rclcpp::TimerBase::SharedPtr command_timer;
 
   void publish_joint_state();
   std::vector<JointCommandTarget> joint_msg_to_target(const booster_joint_interface::msg::SetJoints & msg);
+  std::vector<b1::JointIndex> id_to_joint_index(const std::vector<uint8_t> & ids);
 };
 
 }  // namespace booster_joint_manager

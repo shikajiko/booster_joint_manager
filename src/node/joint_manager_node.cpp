@@ -30,6 +30,15 @@ JointManagerNode::JointManagerNode(const rclcpp::Node::SharedPtr & node) : node(
       auto targets = joint_msg_to_target(*msg);
       joint_manager.handle_set_joints(targets);
     });
+  
+  set_torques_subscriber = node->create_subscription<booster_joint_interface::msg::SetTorques>(
+    "joint/set_torques",
+    10,
+    [this](booster_joint_interface::msg::SetTorques::SharedPtr msg) {
+      auto joints = id_to_joint_index(msg->ids);
+      joint_manager.handle_set_torques(joints, msg->torque_enable);
+    }
+  );
 
   command_timer = node->create_wall_timer(
     std::chrono::milliseconds(kCommandTickMs),
@@ -124,5 +133,21 @@ std::vector<JointCommandTarget> JointManagerNode::joint_msg_to_target(
   }
 
   return targets;
+}
+
+std::vector<b1::JointIndex> JointManagerNode::id_to_joint_index(
+  const std::vector<uint8_t> & ids)
+{
+  std::vector<b1::JointIndex> joints;
+  joints.reserve(ids.size());
+
+  for (const auto id : ids) {
+    if (id >= b1::kJointCnt) {
+      continue;
+    }
+    joints.push_back(static_cast<b1::JointIndex>(id));
+  }
+
+  return joints;
 }
 }  // namespace booster_joint_manager

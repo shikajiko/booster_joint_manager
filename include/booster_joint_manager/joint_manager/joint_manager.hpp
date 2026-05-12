@@ -17,6 +17,7 @@ public:
 
   void update_low_state(const booster_interface::msg::LowState & state);
   void handle_set_joints(const std::vector<JointCommandTarget> & targets);
+  void handle_set_torques(const std::vector<b1::JointIndex> & joints, bool torque_enable);
   bool tick_command(booster_interface::msg::LowCmd & cmd);
   bool get_joint_state(b1::JointIndex joint, booster_interface::msg::MotorState & state) const;
   bool get_low_state(booster_interface::msg::LowState & state) const;
@@ -29,6 +30,7 @@ private:
   booster_interface::msg::LowCmd target_cmd;
   booster_interface::msg::LowCmd active_cmd;
   std::vector<JointCommandTarget> active_targets;
+  bool should_publish_set_torque{false};
   bool command_running{false};
 };
 
