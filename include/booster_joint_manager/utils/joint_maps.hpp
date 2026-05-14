@@ -37,6 +37,33 @@ inline constexpr std::array<b1::JointIndex, b1::kJointCnt> kAllJoints = {
   b1::JointIndex::kCrankDownRight,
 };
 
+inline constexpr std::array<float, b1::kJointCnt> kInitJointPositions = {
+  0.00F, 0.00F,
+  0.10F, -1.50F, 0.00F, -0.20F,
+  0.10F, 1.50F, 0.00F, 0.20F,
+  0.00F,
+  -0.20F, 0.00F, 0.00F, 0.40F, 0.20F, 0.14F,
+  -0.20F, 0.00F, 0.00F, 0.40F, 0.20F, 0.14F,
+};
+
+inline constexpr std::array<float, b1::kJointCnt> kDefaultJointKps = {
+  5.0F, 5.0F,
+  40.0F, 50.0F, 20.0F, 10.0F,
+  40.0F, 50.0F, 20.0F, 10.0F,
+  100.0F,
+  350.0F, 350.0F, 180.0F, 350.0F, 550.0F, 550.0F,
+  350.0F, 350.0F, 180.0F, 350.0F, 550.0F, 550.0F,
+};
+
+inline constexpr std::array<float, b1::kJointCnt> kDefaultJointKds = {
+  0.1F, 0.1F,
+  0.5F, 1.5F, 0.2F, 0.2F,
+  0.5F, 1.5F, 0.2F, 0.2F,
+  5.0F,
+  7.5F, 7.5F, 3.0F, 5.5F, 1.5F, 1.5F,
+  7.5F, 7.5F, 3.0F, 5.5F, 1.5F, 1.5F,
+};
+
 inline constexpr std::array<b1::JointIndex, 8> kArmJoints = {
   b1::JointIndex::kLeftShoulderPitch,
   b1::JointIndex::kLeftShoulderRoll,

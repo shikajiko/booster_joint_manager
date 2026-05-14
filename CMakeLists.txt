@@ -10,10 +10,9 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(booster_interface REQUIRED)
 find_package(booster_joint_interface REQUIRED)
-find_package(keisan REQUIRED)
 
 add_library(${PROJECT_NAME}_lib
-  src/joint_manager/joint_manager/joint_manager.cpp
+  src/joint_manager/joint_manager.cpp
   src/node/joint_manager_node.cpp
   src/robot_mode_validator/robot_mode_validator.cpp
   src/utils/command_constructor.cpp
@@ -29,12 +28,11 @@ ament_target_dependencies(${PROJECT_NAME}_lib
   rclcpp
   booster_interface
   booster_joint_interface
-  keisan
 )
 
 add_executable(joint_state_manager_node src/main.cpp)
 target_link_libraries(joint_state_manager_node ${PROJECT_NAME}_lib)
-ament_target_dependencies(joint_state_manager_node rclcpp booster_interface booster_joint_interface keisan)
+ament_target_dependencies(joint_state_manager_node rclcpp booster_interface booster_joint_interface)
 
 install(
   DIRECTORY include/
@@ -49,7 +47,7 @@ install(
 )
 
 ament_export_include_directories(include)
-ament_export_dependencies(rclcpp booster_interface booster_joint_interface keisan)
+ament_export_dependencies(rclcpp booster_interface booster_joint_interface)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

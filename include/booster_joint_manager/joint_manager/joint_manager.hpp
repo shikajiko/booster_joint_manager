@@ -22,14 +22,16 @@ public:
   bool get_joint_state(b1::JointIndex joint, booster_interface::msg::MotorState & state) const;
   bool get_low_state(booster_interface::msg::LowState & state) const;
   bool has_low_state() const;
+  void set_init_position(bool arm_only);
+  void maintain_current_pose();
 
 private:
   mutable std::mutex mutex;
   booster_interface::msg::LowState current_low_state;
   bool low_state_received{false};
-  booster_interface::msg::LowCmd target_cmd;
-  booster_interface::msg::LowCmd active_cmd;
-  std::vector<JointCommandTarget> active_targets;
+  booster_interface::msg::LowCmd torque_command;
+  std::vector<JointCommandTarget> target_command;
+  std::vector<JointCommandTarget> active_command;
   bool should_publish_set_torque{false};
   bool command_running{false};
 };

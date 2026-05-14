@@ -1,7 +1,5 @@
 #include "booster_joint_manager/utils/command_constructor.hpp"
 
-#include "keisan/angle/angle.hpp"
-
 namespace booster_joint_manager
 {
 
@@ -23,8 +21,8 @@ booster_interface::msg::LowCmd construct_joint_command(
     joint_cmd.q = index < serial_states.size() ? serial_states[index].q : 0.0F;
     joint_cmd.dq = kDefaultJointDq;
     joint_cmd.tau = kDefaultJointTau;
-    joint_cmd.kp = kDefaultJointKp;
-    joint_cmd.kd = kDefaultJointKd;
+    joint_cmd.kp = index < kDefaultJointKps.size() ? kDefaultJointKps[index] : kDefaultJointKp;
+    joint_cmd.kd = index < kDefaultJointKds.size() ? kDefaultJointKds[index] : kDefaultJointKd;
     joint_cmd.weight = kInactiveJointWeight;
   }
 
@@ -35,8 +33,8 @@ booster_interface::msg::LowCmd construct_joint_command(
     }
 
     auto & joint_cmd = cmd.motor_cmd[index];
-    joint_cmd.q = keisan::make_degree(target.position).radian();
-    joint_cmd.weight = kActiveJointWeight;
+    joint_cmd.q = target.position;
+    joint_cmd.weight = target.weight;
   }
 
   return cmd;
@@ -61,8 +59,8 @@ booster_interface::msg::LowCmd construct_set_torque_command(
     joint_cmd.q = index < serial_states.size() ? serial_states[index].q : 0.0F;
     joint_cmd.dq = kDefaultJointDq;
     joint_cmd.tau = kDefaultJointTau;
-    joint_cmd.kp = enable_torque ? kDefaultJointKp : 0.0F;
-    joint_cmd.kd = enable_torque ? kDefaultJointKd : 0.0F;
+    joint_cmd.kp = enable_torque && index < kDefaultJointKps.size() ? kDefaultJointKps[index] : 0.0F;
+    joint_cmd.kd = enable_torque && index < kDefaultJointKds.size() ? kDefaultJointKds[index] : 0.0F;
     joint_cmd.weight = kInactiveJointWeight;
   }
 

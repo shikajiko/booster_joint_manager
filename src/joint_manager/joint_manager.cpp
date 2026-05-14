@@ -18,24 +18,27 @@ void JointManager::handle_set_joints(const std::vector<JointCommandTarget> & tar
     return;
   }
 
-  target_cmd = construct_joint_command(low_state, targets);
-  active_cmd = target_cmd;
-
-  for (std::size_t i = 0; i < active_cmd.motor_cmd.size() && i < low_state.motor_state_serial.size(); ++i) {
-    active_cmd.motor_cmd[i].q = low_state.motor_state_serial[i].q;
-  }
-
+  target_command.clear();
+  active_command.clear();
+  const auto & serial_states = low_state.motor_state_serial;
   for (const auto & target : targets) {
     const auto index = joint_to_index(target.joint);
-    if (index >= active_cmd.motor_cmd.size()) {
+    if (index >= b1::kJointCnt) {
       continue;
     }
 
-    active_cmd.motor_cmd[index].weight = kInactiveJointWeight;
+    const auto current_q = index < serial_states.size() ? serial_states[index].q : 0.0F;
+    target_command.push_back(target);
+    active_command.push_back(
+      JointCommandTarget{
+        target.joint,
+        current_q,
+        target.velocity,
+        kInactiveJointWeight,
+      });
   }
 
-  active_targets = targets;
-  command_running = true;
+  command_running = !active_command.empty();
 }
 
 void JointManager::handle_set_torques(const std::vector<b1::JointIndex> & joints, bool torque_enable)
@@ -50,51 +53,134 @@ void JointManager::handle_set_torques(const std::vector<b1::JointIndex> & joints
     return;
   }
 
-  target_cmd = construct_set_torque_command(low_state, joints, torque_enable);
+  torque_command = construct_set_torque_command(low_state, joints, torque_enable);
   should_publish_set_torque = true; 
+}
+
+void JointManager::set_init_position(bool arm_only)
+{
+  booster_interface::msg::LowState low_state;
+  if (!get_low_state(low_state)) {
+    return;
+  }
+
+  std::lock_guard<std::mutex> lock(mutex);
+  if (command_running || should_publish_set_torque) {
+    return;
+  }
+
+  target_command.clear();
+  active_command.clear();
+
+  const auto & serial_states = low_state.motor_state_serial;
+
+  for (const auto joint : kAllJoints) {
+    const auto index = joint_to_index(joint);
+    const auto current_q = index < serial_states.size() ? serial_states[index].q : 0.0F;
+    const auto target_q = index < kInitJointPositions.size() ? kInitJointPositions[index] : current_q;
+    const auto should_control_joint = !arm_only || is_arm_joint(joint);
+
+    if (should_control_joint) {
+      target_command.push_back(
+        JointCommandTarget{
+          joint,
+          target_q,
+          1.0F,
+          kActiveJointWeight,
+        });
+      active_command.push_back(
+        JointCommandTarget{
+          joint,
+          current_q,
+          1.0F,
+          kInactiveJointWeight,
+        });
+    }
+  }
+
+  command_running = !active_command.empty();
+}
+
+void JointManager::maintain_current_pose()
+{
+  booster_interface::msg::LowState low_state;
+  if (!get_low_state(low_state)) {
+    return;
+  }
+
+  std::lock_guard<std::mutex> lock(mutex);
+  if (command_running || should_publish_set_torque) {
+    return;
+  }
+
+  target_command.clear();
+  active_command.clear();
+
+  const auto & serial_states = low_state.motor_state_serial;
+
+  for (const auto joint : kAllJoints) {
+    const auto index = joint_to_index(joint);
+    const auto current_q = index < serial_states.size() ? serial_states[index].q : 0.0F;
+
+    target_command.push_back(
+      JointCommandTarget{
+        joint,
+        current_q,
+        1.0F,
+        kActiveJointWeight,
+      });
+    active_command.push_back(
+      JointCommandTarget{
+        joint,
+        current_q,
+        1.0F,
+        kInactiveJointWeight,
+      });
+  }
+
+  command_running = !active_command.empty();
 }
 
 bool JointManager::tick_command(booster_interface::msg::LowCmd & cmd)
 {
+  std::lock_guard<std::mutex> lock(mutex);
+
   if (should_publish_set_torque) {
     should_publish_set_torque = false;
-    cmd = target_cmd;
+    cmd = torque_command;
     return true;
   }
 
-  std::lock_guard<std::mutex> lock(mutex);
-  if (!command_running) {
+  if (!command_running || !low_state_received) {
     return false;
   }
 
   bool command_reached = true;
 
-  for (const auto & target : active_targets) {
-    const auto index = joint_to_index(target.joint);
-    if (index >= active_cmd.motor_cmd.size() || index >= target_cmd.motor_cmd.size()) {
+  for (std::size_t i = 0; i < active_command.size() && i < target_command.size(); ++i) {
+    auto & active_target = active_command[i];
+    const auto & target = target_command[i];
+
+    if (active_target.joint != target.joint) {
       continue;
     }
 
-    const auto target_q = target_cmd.motor_cmd[index].q;
-    const auto current_q = active_cmd.motor_cmd[index].q;
-    const auto target_weight = target_cmd.motor_cmd[index].weight;
-    const auto current_weight = active_cmd.motor_cmd[index].weight;
     const auto velocity_scale = std::abs(target.velocity) > 0.0F ? std::abs(target.velocity) : 1.0F;
     const auto max_joint_delta = std::clamp(kBaseJointStep * velocity_scale, 0.0F, kMaxJointStep);
 
-    const auto delta_q = target_q - current_q;
+    const auto delta_q = target.position - active_target.position;
     const auto joint_step = std::clamp(delta_q, -max_joint_delta, max_joint_delta);
-    const auto weight_step = std::clamp(target_weight - current_weight, -kWeightMargin, kWeightMargin);
+    const auto weight_step = std::clamp(target.weight - active_target.weight, -kWeightMargin, kWeightMargin);
 
-    active_cmd.motor_cmd[index].q = current_q + joint_step;
-    active_cmd.motor_cmd[index].weight = current_weight + weight_step;
+    active_target.position += joint_step;
+    active_target.weight += weight_step;
 
-    if (std::abs(delta_q) > max_joint_delta || std::abs(target_weight - current_weight) > kWeightMargin) {
+    if (std::abs(delta_q) > max_joint_delta || std::abs(target.weight - active_target.weight) > kWeightMargin) {
       command_reached = false;
     }
   }
 
-  cmd = active_cmd;
+  cmd = construct_joint_command(current_low_state, active_command);
   if (command_reached) {
     command_running = false;
   }

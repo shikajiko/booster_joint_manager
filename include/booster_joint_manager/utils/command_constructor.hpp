@@ -9,13 +9,6 @@
 namespace booster_joint_manager
 {
 
-struct JointCommandTarget
-{
-  b1::JointIndex joint;
-  float position;
-  float velocity;
-};
-
 inline constexpr float kDefaultJointDq = 0.0F;
 inline constexpr float kDefaultJointTau = 0.0F;
 inline constexpr float kDefaultJointKp = 60.0F;
@@ -32,6 +25,14 @@ inline constexpr float kBaseJointStepPerTick = kBaseJointStep;
 inline constexpr float kMaxJointStep = kMaxJointVelocity * kControlDt;
 inline constexpr float kMaxJointDelta = kMaxJointStep;
 inline constexpr int kCommandTickMs = static_cast<int>(kControlDt / 0.001F);
+
+struct JointCommandTarget
+{
+  b1::JointIndex joint;
+  float position;
+  float velocity;
+  float weight{kActiveJointWeight};
+};
 
 booster_interface::msg::LowCmd construct_joint_command(
   const booster_interface::msg::LowState & state,

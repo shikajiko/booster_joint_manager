@@ -40,6 +40,14 @@ JointManagerNode::JointManagerNode(const rclcpp::Node::SharedPtr & node) : node(
     }
   );
 
+  joint_prepare_service = node->create_service<JointPrepareService>(
+    "prep_transition_service",
+    std::bind(
+      &JointManagerNode::handle_prepare_transition_request,
+      this,
+      std::placeholders::_1,
+      std::placeholders::_2));
+
   command_timer = node->create_wall_timer(
     std::chrono::milliseconds(kCommandTickMs),
     [this](){
@@ -111,6 +119,67 @@ void JointManagerNode::publish_joint_state()
   }
 
   joint_state_publisher->publish(state);
+}
+
+void JointManagerNode::handle_prepare_transition_request(const std::shared_ptr<JointPrepareService::Request> req,
+    std::shared_ptr<JointPrepareService::Response> res)
+{
+  const auto & command = req->command;
+  switch (command.transition) {
+    case booster_joint_interface::msg::TransitionCommand::TRANSITION_MODE_SWITCH:
+      handle_mode_prepare(command.target_mode, res);
+      return;
+
+    case booster_joint_interface::msg::TransitionCommand::TRANSITION_UPPER_BODY_CONTROL:
+      handle_upper_body_prepare(command.upper_body_enable, res);
+      return;
+
+    default:
+      res->success = false;
+      res->message = "Unknown transition type";
+      return;
+  }
+}
+
+void JointManagerNode::handle_mode_prepare(uint8_t target_mode, std::shared_ptr<JointPrepareService::Response> res)
+{
+  switch (target_mode) {
+    case NextMode::MODE_DAMPING:
+      res->success = true;
+      return;
+
+    case NextMode::MODE_STAND:
+    case NextMode::MODE_WALK:
+      joint_manager.set_init_position(false);
+      res->success = true;
+      res->message = "Prepared init pose";
+      return;
+
+    case NextMode::MODE_CUSTOM:
+      joint_manager.maintain_current_pose();
+      res->success = true;
+      res->message = "Prepared current-pose hold";
+      return;
+
+    default:
+      res->success = false;
+      res->message = "Unknown target mode";
+      return;
+  }
+}
+
+void JointManagerNode::handle_upper_body_prepare(bool enable, std::shared_ptr<JointPrepareService::Response> res)
+{
+  if (enable) {
+    joint_manager.maintain_current_pose();
+    res->success = true;
+    res->message = "Prepared upper-body current-pose hold";
+    return;
+  }
+
+  joint_manager.set_init_position(true);
+  res->success = true;
+  res->message = "Prepared upper-body init pose";
 }
 
 std::vector<JointCommandTarget> JointManagerNode::joint_msg_to_target(
