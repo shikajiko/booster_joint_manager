@@ -79,38 +79,6 @@ bool JointManagerNode::get_joint_state(
   return joint_manager.get_joint_state(joint, state);
 }
 
-void JointManagerNode::print_joint_info(JointIndex joint)
-{
-  booster_interface::msg::MotorState state;
-  if (!get_joint_state(joint, state)) {
-    RCLCPP_WARN(
-      node->get_logger(),
-      "No /low_state data received yet for joint %d (%.*s).",
-      static_cast<int>(joint),
-      static_cast<int>(joint_name(joint).size()),
-      joint_name(joint).data());
-    return;
-  }
-
-  RCLCPP_INFO(
-    node->get_logger(),
-    "joint %d (%.*s): q=%.4f dq=%.4f ddq=%.4f tau_est=%.4f",
-    static_cast<int>(joint),
-    static_cast<int>(joint_name(joint).size()),
-    joint_name(joint).data(),
-    state.q,
-    state.dq,
-    state.ddq,
-    state.tau_est);
-}
-
-void JointManagerNode::print_all_joint_info()
-{
-  for (const auto joint : kAllJoints) {
-    print_joint_info(joint);
-  }
-}
-
 void JointManagerNode::publish_joint_cmd(const booster_interface::msg::LowCmd & cmd)
 {
   RCLCPP_DEBUG(node->get_logger(), "Publishing /joint_ctrl command");

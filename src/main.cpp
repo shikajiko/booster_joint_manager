@@ -1,5 +1,3 @@
-#include <memory>
-
 #include "booster_joint_manager/node/joint_manager_node.hpp"
 #include "rclcpp/rclcpp.hpp"
 
