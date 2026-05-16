@@ -9,7 +9,7 @@ booster_interface::msg::LowCmd construct_joint_command(
 {
   booster_interface::msg::LowCmd cmd;
   cmd.cmd_type = booster_interface::msg::LowCmd::CMD_TYPE_SERIAL;
-  cmd.motor_cmd.resize(b1::kJointCnt);
+  cmd.motor_cmd.resize(kJointCnt);
 
   const auto & serial_states = state.motor_state_serial;
 
@@ -42,12 +42,12 @@ booster_interface::msg::LowCmd construct_joint_command(
 
 booster_interface::msg::LowCmd construct_set_torque_command(
   const booster_interface::msg::LowState & state,
-  const std::vector<b1::JointIndex> & joints,
+  const std::vector<JointIndex> & joints,
   bool enable_torque)
 {
   booster_interface::msg::LowCmd cmd;
   cmd.cmd_type = booster_interface::msg::LowCmd::CMD_TYPE_SERIAL;
-  cmd.motor_cmd.resize(b1::kJointCnt);
+  cmd.motor_cmd.resize(kJointCnt);
 
   const auto & serial_states = state.motor_state_serial;
   

@@ -73,13 +73,13 @@ void JointManagerNode::update_low_state(const booster_interface::msg::LowState::
 }
 
 bool JointManagerNode::get_joint_state(
-  b1::JointIndex joint,
+  JointIndex joint,
   booster_interface::msg::MotorState & state) const
 {
   return joint_manager.get_joint_state(joint, state);
 }
 
-void JointManagerNode::print_joint_info(b1::JointIndex joint)
+void JointManagerNode::print_joint_info(JointIndex joint)
 {
   booster_interface::msg::MotorState state;
   if (!get_joint_state(joint, state)) {
@@ -223,13 +223,13 @@ std::vector<JointCommandTarget> JointManagerNode::joint_msg_to_target(
   targets.reserve(msg.joints.size());
 
   for (const auto & joint : msg.joints) {
-    if (joint.id >= b1::kJointCnt) {
+    if (joint.id >= kJointCnt) {
       continue;
     }
 
     targets.push_back(
       JointCommandTarget{
-        static_cast<b1::JointIndex>(joint.id),
+        static_cast<JointIndex>(joint.id),
         joint.position,
         joint.velocity,
       });
@@ -238,17 +238,17 @@ std::vector<JointCommandTarget> JointManagerNode::joint_msg_to_target(
   return targets;
 }
 
-std::vector<b1::JointIndex> JointManagerNode::id_to_joint_index(
+std::vector<JointIndex> JointManagerNode::id_to_joint_index(
   const std::vector<uint8_t> & ids)
 {
-  std::vector<b1::JointIndex> joints;
+  std::vector<JointIndex> joints;
   joints.reserve(ids.size());
 
   for (const auto id : ids) {
-    if (id >= b1::kJointCnt) {
+    if (id >= kJointCnt) {
       continue;
     }
-    joints.push_back(static_cast<b1::JointIndex>(id));
+    joints.push_back(static_cast<JointIndex>(id));
   }
 
   return joints;

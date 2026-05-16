@@ -23,7 +23,7 @@ void JointManager::handle_set_joints(const std::vector<JointCommandTarget> & tar
   const auto & serial_states = low_state.motor_state_serial;
   for (const auto & target : targets) {
     const auto index = joint_to_index(target.joint);
-    if (index >= b1::kJointCnt) {
+    if (index >= kJointCnt) {
       continue;
     }
 
@@ -41,7 +41,7 @@ void JointManager::handle_set_joints(const std::vector<JointCommandTarget> & tar
   command_running = !active_command.empty();
 }
 
-void JointManager::handle_set_torques(const std::vector<b1::JointIndex> & joints, bool torque_enable)
+void JointManager::handle_set_torques(const std::vector<JointIndex> & joints, bool torque_enable)
 {
   booster_interface::msg::LowState low_state;
   if (joints.empty() || !get_low_state(low_state)) {
@@ -195,7 +195,7 @@ void JointManager::update_low_state(const booster_interface::msg::LowState & low
   low_state_received = true;
 }
 
-bool JointManager::get_joint_state(b1::JointIndex joint, booster_interface::msg::MotorState & joint_state) const 
+bool JointManager::get_joint_state(JointIndex joint, booster_interface::msg::MotorState & joint_state) const
 {
   const auto index = joint_to_index(joint);
   std::lock_guard<std::mutex> lock(mutex);

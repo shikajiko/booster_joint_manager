@@ -3,66 +3,64 @@
 namespace booster_joint_manager
 {
 
-std::string_view joint_name(b1::JointIndex joint)
+std::string_view joint_name(JointIndex joint)
 {
   switch (joint) {
-    case b1::JointIndex::kHeadYaw:
+    case JointIndex::kHeadYaw:
       return "HeadYaw";
-    case b1::JointIndex::kHeadPitch:
+    case JointIndex::kHeadPitch:
       return "HeadPitch";
-    case b1::JointIndex::kLeftShoulderPitch:
+    case JointIndex::kLeftShoulderPitch:
       return "LeftShoulderPitch";
-    case b1::JointIndex::kLeftShoulderRoll:
+    case JointIndex::kLeftShoulderRoll:
       return "LeftShoulderRoll";
-    case b1::JointIndex::kLeftElbowPitch:
+    case JointIndex::kLeftElbowPitch:
       return "LeftElbowPitch";
-    case b1::JointIndex::kLeftElbowYaw:
+    case JointIndex::kLeftElbowYaw:
       return "LeftElbowYaw";
-    case b1::JointIndex::kRightShoulderPitch:
+    case JointIndex::kRightShoulderPitch:
       return "RightShoulderPitch";
-    case b1::JointIndex::kRightShoulderRoll:
+    case JointIndex::kRightShoulderRoll:
       return "RightShoulderRoll";
-    case b1::JointIndex::kRightElbowPitch:
+    case JointIndex::kRightElbowPitch:
       return "RightElbowPitch";
-    case b1::JointIndex::kRightElbowYaw:
+    case JointIndex::kRightElbowYaw:
       return "RightElbowYaw";
-    case b1::JointIndex::kWaist:
-      return "Waist";
-    case b1::JointIndex::kLeftHipPitch:
+    case JointIndex::kLeftHipPitch:
       return "LeftHipPitch";
-    case b1::JointIndex::kLeftHipRoll:
+    case JointIndex::kLeftHipRoll:
       return "LeftHipRoll";
-    case b1::JointIndex::kLeftHipYaw:
+    case JointIndex::kLeftHipYaw:
       return "LeftHipYaw";
-    case b1::JointIndex::kLeftKneePitch:
+    case JointIndex::kLeftKneePitch:
       return "LeftKneePitch";
-    case b1::JointIndex::kCrankUpLeft:
+    case JointIndex::kCrankUpLeft:
       return "CrankUpLeft";
-    case b1::JointIndex::kCrankDownLeft:
+    case JointIndex::kCrankDownLeft:
       return "CrankDownLeft";
-    case b1::JointIndex::kRightHipPitch:
+    case JointIndex::kRightHipPitch:
       return "RightHipPitch";
-    case b1::JointIndex::kRightHipRoll:
+    case JointIndex::kRightHipRoll:
       return "RightHipRoll";
-    case b1::JointIndex::kRightHipYaw:
+    case JointIndex::kRightHipYaw:
       return "RightHipYaw";
-    case b1::JointIndex::kRightKneePitch:
+    case JointIndex::kRightKneePitch:
       return "RightKneePitch";
-    case b1::JointIndex::kCrankUpRight:
+    case JointIndex::kCrankUpRight:
       return "CrankUpRight";
-    case b1::JointIndex::kCrankDownRight:
+    case JointIndex::kCrankDownRight:
       return "CrankDownRight";
   }
 
   return "Unknown";
 }
 
-std::size_t joint_to_index(b1::JointIndex joint)
+std::size_t joint_to_index(JointIndex joint)
 {
   return static_cast<std::size_t>(joint);
 }
 
-bool is_arm_joint(b1::JointIndex joint)
+bool is_arm_joint(JointIndex joint)
 {
   for (const auto arm_joint : kArmJoints) {
     if (joint == arm_joint) {

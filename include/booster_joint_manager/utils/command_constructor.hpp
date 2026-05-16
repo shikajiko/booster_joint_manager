@@ -28,7 +28,7 @@ inline constexpr int kCommandTickMs = static_cast<int>(kControlDt / 0.001F);
 
 struct JointCommandTarget
 {
-  b1::JointIndex joint;
+  JointIndex joint;
   float position;
   float velocity;
   float weight{kActiveJointWeight};
@@ -40,7 +40,7 @@ booster_interface::msg::LowCmd construct_joint_command(
 
 booster_interface::msg::LowCmd construct_set_torque_command(
   const booster_interface::msg::LowState & state,
-  const std::vector<b1::JointIndex> & joints,
+  const std::vector<JointIndex> & joints,
   bool enable_torque);
 
 }  // namespace booster_joint_manager

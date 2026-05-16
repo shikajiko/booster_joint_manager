@@ -21,8 +21,8 @@ class JointManagerNode
 public:
   explicit JointManagerNode(const rclcpp::Node::SharedPtr & node);
 
-  bool get_joint_state(b1::JointIndex joint, booster_interface::msg::MotorState & state) const;
-  void print_joint_info(b1::JointIndex joint);
+  bool get_joint_state(JointIndex joint, booster_interface::msg::MotorState & state) const;
+  void print_joint_info(JointIndex joint);
   void print_all_joint_info();
 
 private:
@@ -50,7 +50,7 @@ private:
 
 
   std::vector<JointCommandTarget> joint_msg_to_target(const booster_joint_interface::msg::SetJoints & msg);
-  std::vector<b1::JointIndex> id_to_joint_index(const std::vector<uint8_t> & ids);
+  std::vector<JointIndex> id_to_joint_index(const std::vector<uint8_t> & ids);
 };
 
 }  // namespace booster_joint_manager
